@@ -1,4 +1,4 @@
-#Pyoodle
+# Pyoodle
 A utility for interactively downloading course content from any moodle instance!
 
 ## Getting Started
@@ -17,12 +17,9 @@ These details can be provided in the means of arguments, or a config file - they
 | Flag              | Purpose                                       |
 | ----------------- | --------------------------------------------- |
 | -h, --host        | Hostname of your moodle instance (URL)        |
-| -u, --username    | Username to log into moodle with
-|                   | *(not required if using cookie authentication)* |
-| -p, --password    | Password to log into moodle with
-|                   | *(not required if using cookie authentication)* |
-| -t, --cookie      | *MoodleSession* cookie from authenticated session |
-|                   | *(not required if using login authentication)*  |
+| -u, --username    | Username to log into moodle with *(not required if using cookie authentication)* |
+| -p, --password    | Password to log into moodle with *(not required if using cookie authentication)* |
+| -t, --cookie      | *MoodleSession* cookie from authenticated session *(not required if using login authentication)*  |
 | -d, --directory   | Directory to use when saving course content   |
 | -c, --course      | **Not yet implemented** Course code to auto download from |
 | --config          | Path pointing to config file to load settings from |
