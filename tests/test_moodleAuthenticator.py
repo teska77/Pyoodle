@@ -1,11 +1,12 @@
 from unittest import TestCase
 from src.pyoodle import MoodleAuthenticator, Moodle
-import requests, time
+import requests, time, os, base64
 
 
 class TestMoodleAuthenticator(TestCase):
     def setUp(self) -> None:
-        self.mInfo = Moodle("https://moodle.royalholloway.ac.uk", username="REDACTED", password="REDACTED")
+        self.mInfo = Moodle(os.getenv("moodle-dl-host"), username=os.getenv("moodle-dl-username"),
+                            password=str(base64.b64decode(os.getenv("moodle-dl-password"))))
         self.m_authenticator = MoodleAuthenticator(self.mInfo, DEBUG_LEVEL=4)
 
     def test_get_login_attributes(self):

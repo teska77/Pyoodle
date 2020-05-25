@@ -9,6 +9,7 @@ import re
 import shutil
 import sys
 import time
+import pprint
 from getpass import getpass
 
 import requests
@@ -126,6 +127,66 @@ class MoodleAuthenticator:
 
         # We are now logged in, hand over the request session to the next object
         return self.session
+
+
+class MoodleCourseViewer:
+
+    def __init__(self, moodle: Moodle):
+        self.host = moodle.host
+        self.session = moodle.session
+        self.sess_key = moodle.sess_key
+        self.debug_level = moodle.debug_level
+        self.categories = {}
+
+    def get_main_categories(self):
+        self.categories = self.get_categories(f"{self.host}/course/index.php")
+        return self.categories
+
+    def get_categories(self, url):
+        category_map = {}
+        response = self.session.get(url)
+        soup = BeautifulSoup(response.content, 'html.parser')
+        categories = soup.findAll(attrs={"class": "category"})  # Moodle separates each course category via a
+        # 'category' class attribute
+        for category in categories:
+            link_name = category.find('a', href=True).text
+            link_url = category.find('a', href=True)['href']
+            link_id = category['data-categoryid']
+            category_map[link_name] = {"id": link_id, "url": link_url}
+        return category_map
+
+    def get_subject_list(self, subject_id):
+        subject_map = {}
+        # We use 'perpage=0' here to make sure that all subjects are displayed on one page
+        response = self.session.get(f"{self.host}/course/index.php?categoryid={str(subject_id)}&perpage=0")
+        soup = BeautifulSoup(response.content, 'html.parser')
+        subjects = soup.findAll(attrs={"class": "category"})
+        for subject in subjects:
+            link_name = subject.find('a', href=True).text
+            link_url = subject.find('a', href=True)['href']
+            link_id = subject['data-categoryid']
+            subject_map[link_name] = {"id": link_id, "url": link_url}
+        return subject_map
+
+    def get_course_list(self, course_id):
+        course_map = {}
+        # We use 'perpage=0' here to make sure that all subjects are displayed on one page
+        response = self.session.get(f"{self.host}/course/index.php?categoryid={course_id}&perpage=0")
+        soup = BeautifulSoup(response.content, 'html.parser')
+        courses = soup.findAll(attrs={"class": "coursename"})
+        for course in courses:
+            link_name = course.find('a', href=True).text
+            link_url = course.find('a', href=True)['href']
+            # Try to find the ID without scraping the url:
+            try:
+                link_id = course.parent.parent['data-courseid']  # Preferred method
+            except KeyError:
+                # We will have to get the course ID from the URL instead
+                # First, find a pattern that matches `?id=xxxx' in a URL, get the first (and only) result using [0],
+                # then cut the first four characters off (remove `?id=`). Finally, convert the id string to an int
+                link_id = int(re.findall(r"\?id=\d+", link_url)[0][4:])
+            course_map[link_name] = {"id": link_id, "url": link_url}
+        return course_map
 
 
 class MoodleCourseFinder:
